@@ -1,35 +1,35 @@
 package com.example.spring_telecom.controllers;
 
-import com.example.spring_telecom.entities.TelecomUser; // Add this import
-import com.example.spring_telecom.services.TelecomUserService;
+import com.example.spring_telecom.entities.User;
+import com.example.spring_telecom.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/usr")
-public class TelecomUserController {
+@RequestMapping("/api/users")
+public class UserController {
     @Autowired
-    private TelecomUserService service;
+    private UserService service;
 
     @GetMapping
-    public List<TelecomUser> getAll() {
+    public List<User> getAll() {
         return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public TelecomUser getById(@PathVariable Long id) {
+    public User getById(@PathVariable Long id) {
         return service.getById(id);
     }
 
     @PostMapping
-    public TelecomUser create(@RequestBody TelecomUser user) {
+    public User create(@RequestBody User user) {
         return service.create(user);
     }
 
     @PutMapping("/{id}")
-    public TelecomUser update(@PathVariable Long id, @RequestBody TelecomUser user) {
+    public User update(@PathVariable Long id, @RequestBody User user) {
         return service.update(id, user);
     }
 
