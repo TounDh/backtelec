@@ -1,5 +1,6 @@
 package com.example.spring_telecom.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -11,6 +12,7 @@ public class Role {
     private boolean role;
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<User> users;
 
     // Getters and Setters
