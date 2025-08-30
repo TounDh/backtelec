@@ -6,6 +6,8 @@ import com.example.spring_telecom.repositories.OfferRepository;
 import com.example.spring_telecom.repositories.SrvceRepository;
 import com.example.spring_telecom.services.SrvceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,13 +36,47 @@ public class SrvceController {
 
 
     @PutMapping("/{id}")
-    public Srvce update(@PathVariable Long id, @RequestBody Srvce srvce) {
-        return service.update(id, srvce);
+    public Srvce update(@PathVariable Long id, @RequestBody Srvce updatedService) {
+        Srvce existingService = srvceRepository.findById(id).orElseThrow();
+
+        // Update basic service fields
+        existingService.setName(updatedService.getName());
+        existingService.setDescription(updatedService.getDescription());
+        existingService.setInstallationFees(updatedService.getInstallationFees());
+
+        // Clear existing offers and add new ones
+        existingService.getOffers().clear();
+        if (updatedService.getOffers() != null) {
+            for (Offer offer : updatedService.getOffers()) {
+                Offer newOffer = new Offer();
+                newOffer.setPrice(offer.getPrice());
+                newOffer.setSpeed(offer.getSpeed());
+                newOffer.setCommitment(offer.getCommitment());
+                existingService.addOffer(newOffer);
+            }
+        }
+
+        return srvceRepository.save(existingService);
     }
 
+
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            // First, delete all offers associated with this service
+            List<Offer> existingOffers = offerRepository.findBySrvceId(id);
+            if (!existingOffers.isEmpty()) {
+                offerRepository.deleteAll(existingOffers);
+            }
+
+            // Then delete the service
+            srvceRepository.deleteById(id);
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting service: " + e.getMessage());
+        }
     }
 
     @PostMapping

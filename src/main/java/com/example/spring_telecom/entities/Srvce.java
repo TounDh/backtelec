@@ -15,7 +15,8 @@ public class Srvce {
     @OneToMany(mappedBy = "srvce", cascade = CascadeType.ALL)
     private List<Application> applications;
 
-    @OneToMany(mappedBy = "srvce", cascade = CascadeType.ALL)
+
+    @OneToMany(mappedBy = "srvce", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Offer> offers;
 
     // Getters and Setters
@@ -31,4 +32,8 @@ public class Srvce {
     public void setApplications(List<Application> applications) { this.applications = applications; }
     public List<Offer> getOffers() { return offers; }
     public void setOffers(List<Offer> offers) { this.offers = offers; }
+    public void addOffer(Offer offer) {
+        offers.add(offer);
+        offer.setSrvce(this);
+    }
 }
