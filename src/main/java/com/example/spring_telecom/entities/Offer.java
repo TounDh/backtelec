@@ -1,5 +1,6 @@
 package com.example.spring_telecom.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,6 +14,7 @@ public class Offer {
 
     @ManyToOne
     @JoinColumn(name = "srvce_id")
+    @JsonIgnore
     private Srvce srvce;
 
     // Getters and Setters
