@@ -1,6 +1,7 @@
 package com.example.spring_telecom.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -9,11 +10,25 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Name is mandatory")
     private String name;
+
+    @NotBlank(message = "Surname is mandatory")
     private String surname;
+
+    @Email(message = "Please provide a valid email address")
+    @NotBlank(message = "Email is mandatory")
     private String email;
+
+    @NotBlank(message = "Phone number is mandatory")
     private String phone;
+
+    @Past(message = "Birthdate must be in the past")
     private LocalDate birthdate;
+
+    @NotBlank(message = "Password is mandatory")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
     @ManyToOne
@@ -22,6 +37,9 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Application> applications;
+
+    // Getters and Setters
+    // ... (keep your existing getters and setters)
 
     // Getters and Setters
     public Long getId() { return id; }
