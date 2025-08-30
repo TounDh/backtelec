@@ -38,9 +38,13 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Application> applications;
 
-    // Getters and Setters
-    // ... (keep your existing getters and setters)
-
+    @PrePersist
+    public void setDefaultRole() {
+        if (this.role == null) {
+            // You'll need to fetch the default role from database
+            // or set it programmatically
+        }
+    }
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

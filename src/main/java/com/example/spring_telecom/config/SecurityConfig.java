@@ -23,7 +23,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())  // Disable CSRF for APIs
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/users/**").permitAll()  // Allow public access to user endpoints
-                        .requestMatchers("/api/srvces/**").permitAll()  // Allow public access to services endpoints
+                        .requestMatchers("/api/srvces/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll() // Allow public access to services endpoints
                         .anyRequest().authenticated()  // All other endpoints require authentication
                 )
                 .formLogin(form -> form.disable())  // Disable form login for APIs

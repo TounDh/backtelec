@@ -1,23 +1,34 @@
 package com.example.spring_telecom.services;
 
+import com.example.spring_telecom.entities.Role;
 import com.example.spring_telecom.entities.User;
+import com.example.spring_telecom.repositories.RoleRepository;
 import com.example.spring_telecom.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
     @Autowired
     private UserRepository repository;
-
+    @Autowired
+    private RoleRepository roleRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
 
     public User create(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // AUTO-ASSIGN ROLE_ID = 2
+        Role userRole = new Role();
+        userRole.setId(2L); // Set role_id to 2 directly
+        user.setRole(userRole);
+
         return repository.save(user);
     }
 
@@ -52,5 +63,13 @@ public class UserService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+
+
+
+    // Add this method to your UserService class
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 }
