@@ -1,7 +1,10 @@
 package com.example.spring_telecom.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,8 +21,8 @@ public class Srvce {
     private List<Application> applications;
 
 
-    @OneToMany(mappedBy = "srvce", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    @OneToMany(mappedBy = "srvce", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("srvce")
     private List<Offer> offers;
 
     // Getters and Setters
@@ -36,6 +39,9 @@ public class Srvce {
     public List<Offer> getOffers() { return offers; }
     public void setOffers(List<Offer> offers) { this.offers = offers; }
     public void addOffer(Offer offer) {
+        if (offers == null) {
+            offers = new ArrayList<>();
+        }
         offers.add(offer);
         offer.setSrvce(this);
     }

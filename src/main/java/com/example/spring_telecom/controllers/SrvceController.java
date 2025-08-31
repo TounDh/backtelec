@@ -5,6 +5,7 @@ import com.example.spring_telecom.entities.Srvce;
 import com.example.spring_telecom.repositories.OfferRepository;
 import com.example.spring_telecom.repositories.SrvceRepository;
 import com.example.spring_telecom.services.SrvceService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +27,14 @@ public class SrvceController {
 
     @GetMapping
     public List<Srvce> getAll() {
-        return service.getAll();
+        return service.getAllServicesWithOffers(); // Use the new method
     }
 
     @GetMapping("/{id}")
     public Srvce getById(@PathVariable Long id) {
-        return service.getById(id);
+        return service.getServiceByIdWithOffers(id); // Use the new method
     }
+
 
 
     @PutMapping("/{id}")
@@ -80,17 +82,20 @@ public class SrvceController {
     }
 
     @PostMapping
-    public Srvce createService(@RequestBody Srvce service) {
-        Srvce savedService = srvceRepository.save(service);
+    @Transactional
+    public Srvce createService(@RequestBody Srvce serviceRequest) {
+        // First save the service to generate ID
+        Srvce savedService = srvceRepository.save(serviceRequest);
 
-        // Link offers to the service and save them
-        if (service.getOffers() != null) {
-            for (Offer offer : service.getOffers()) {
-                offer.setSrvce(savedService);
+        // Ensure offers are properly linked to the service
+        if (serviceRequest.getOffers() != null) {
+            for (Offer offer : serviceRequest.getOffers()) {
+                offer.setSrvce(savedService); // This is crucial!
                 offerRepository.save(offer);
             }
         }
 
+        // Return the complete service with offers
         return srvceRepository.findById(savedService.getId()).orElseThrow();
     }
 }

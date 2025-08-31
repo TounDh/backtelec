@@ -1,6 +1,7 @@
 package com.example.spring_telecom.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,9 +13,9 @@ public class Offer {
     private String speed;
     private double price;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "srvce_id")
-    @JsonIgnore
+    @JsonIgnoreProperties("offers")
     private Srvce srvce;
 
     // Getters and Setters

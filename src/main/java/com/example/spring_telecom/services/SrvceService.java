@@ -11,6 +11,16 @@ import java.util.List;
 public class SrvceService {
     @Autowired
     private SrvceRepository repository;
+    @Autowired
+    private SrvceRepository srvceRepository;
+
+    public List<Srvce> getAllServicesWithOffers() {
+        return srvceRepository.findAllWithOffers();
+    }
+
+    public Srvce getServiceByIdWithOffers(Long id) {
+        return srvceRepository.findByIdWithOffers(id).orElseThrow();
+    }
 
     public List<Srvce> getAll() {
         return repository.findAll();
