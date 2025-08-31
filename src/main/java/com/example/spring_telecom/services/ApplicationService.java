@@ -35,4 +35,14 @@ public class ApplicationService {
     public List<Application> getApplicationsByUserId(Long userId) {
         return applicationRepository.findByUserIdWithDetails(userId);
     }
+
+
+    public void updateApplicationStatus(Long id, String status) {
+        Application application = applicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        // Update the status
+        application.setStatus(status);
+        applicationRepository.save(application);
+    }
 }

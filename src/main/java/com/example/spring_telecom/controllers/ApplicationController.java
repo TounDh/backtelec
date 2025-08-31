@@ -30,4 +30,26 @@ public class ApplicationController {
         List<Application> applications = applicationService.getApplicationsByUserId(userId);
         return ResponseEntity.ok(applications);
     }
+
+
+
+
+    // Update application status
+    @PutMapping("/{id}/status")
+    public ResponseEntity<String> updateApplicationStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+
+        // Validate status
+        if (!"APPROVED".equals(status) && !"REJECTED".equals(status)) {
+            return ResponseEntity.badRequest().body("Invalid status. Must be 'APPROVED' or 'REJECTED'");
+        }
+
+        try {
+            applicationService.updateApplicationStatus(id, status);
+            return ResponseEntity.ok("Application status updated to " + status);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
