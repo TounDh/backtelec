@@ -15,6 +15,16 @@ public class ApplicationController {
     private ApplicationService applicationService;
 
     // Get applications by user ID
+
+
+
+    @GetMapping
+    public ResponseEntity<List<Application>> getAllApplications() {
+        List<Application> applications = applicationService.getAllApplications();
+        return ResponseEntity.ok(applications);
+    }
+
+    // Get applications by user ID
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Application>> getApplicationsByUserId(@PathVariable Long userId) {
         List<Application> applications = applicationService.getApplicationsByUserId(userId);

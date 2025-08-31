@@ -1,6 +1,7 @@
 package com.example.spring_telecom.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -18,7 +19,7 @@ public class Application {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnore // Prevents circular reference
+    @JsonIgnoreProperties({"applications", "password"})// Prevents circular reference
     private User user;
 
     @ManyToOne

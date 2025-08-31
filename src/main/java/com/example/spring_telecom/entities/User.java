@@ -20,7 +20,7 @@ public class User {
     private String password;
     private String role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore // Prevents circular reference
     private List<Application> applications;
 
@@ -51,4 +51,5 @@ public class User {
 
     public List<Application> getApplications() { return applications; }
     public void setApplications(List<Application> applications) { this.applications = applications; }
+
 }
