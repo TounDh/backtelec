@@ -66,4 +66,9 @@ public class Application {
 
     public Offer getOffer() { return offer; }
     public void setOffer(Offer offer) { this.offer = offer; }
+
+    // Add this method to Application.java
+    public boolean isApproved() {
+        return "APPROVED".equals(this.status);
+    }
 }

@@ -1,11 +1,16 @@
 package com.example.spring_telecom.services;
 
 import com.example.spring_telecom.entities.Application;
+import com.example.spring_telecom.entities.Payment;
 import com.example.spring_telecom.entities.User;
 import com.example.spring_telecom.repositories.ApplicationRepository;
+import com.example.spring_telecom.repositories.PaymentRepository;
 import com.example.spring_telecom.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +22,9 @@ public class ApplicationService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     public List<Application> getAllApplications() {
         List<Application> applications = applicationRepository.findAllWithDetails();
@@ -36,13 +44,30 @@ public class ApplicationService {
         return applicationRepository.findByUserIdWithDetails(userId);
     }
 
-
+    @Transactional
     public void updateApplicationStatus(Long id, String status) {
         Application application = applicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
+        String oldStatus = application.getStatus();
+
         // Update the status
         application.setStatus(status);
         applicationRepository.save(application);
+
+        // If status changed to APPROVED, create a payment
+        if ("APPROVED".equals(status) && !"APPROVED".equals(oldStatus)) {
+            createPaymentForApprovedApplication(application);
+        }
+    }
+
+    private void createPaymentForApprovedApplication(Application application) {
+        Payment payment = new Payment();
+        payment.setApplication(application);
+        payment.setTotal(application.getSrvce().getInstallationFees());
+        payment.setDeadline(LocalDate.now().plusDays(7)); // 30 days from now
+        payment.setStatus("PENDING"); // Initial payment status
+
+        paymentRepository.save(payment);
     }
 }

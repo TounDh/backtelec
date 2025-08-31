@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "payments")
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +17,18 @@ public class Payment {
     @JoinColumn(name = "application_id")
     private Application application;
 
+    // Constructors
+    public Payment() {
+        this.status = "PENDING";
+    }
+
+    public Payment(Application application, double total, LocalDate deadline) {
+        this.application = application;
+        this.total = total;
+        this.deadline = deadline;
+        this.status = "PENDING";
+    }
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -27,4 +40,6 @@ public class Payment {
     public void setStatus(String status) { this.status = status; }
     public Application getApplication() { return application; }
     public void setApplication(Application application) { this.application = application; }
+
+
 }

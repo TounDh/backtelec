@@ -1,6 +1,7 @@
 package com.example.spring_telecom.controllers;
 
 import com.example.spring_telecom.entities.Payment;
+import com.example.spring_telecom.repositories.PaymentRepository;
 import com.example.spring_telecom.services.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,8 @@ import java.util.List;
 public class PaymentController {
     @Autowired
     private PaymentService service;
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     @GetMapping
     public List<Payment> getAll() {
@@ -36,5 +39,11 @@ public class PaymentController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+
+    @PostMapping("/by-applications")
+    public List<Payment> getPaymentsByApplicationIds(@RequestBody List<Long> applicationIds) {
+        return paymentRepository.findByApplicationIdIn(applicationIds);
     }
 }
