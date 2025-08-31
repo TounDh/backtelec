@@ -1,11 +1,8 @@
 package com.example.spring_telecom.services;
 
-import com.example.spring_telecom.entities.Role;
 import com.example.spring_telecom.entities.User;
-import com.example.spring_telecom.repositories.RoleRepository;
 import com.example.spring_telecom.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,68 +10,62 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository repository;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+
     @Autowired
     private UserRepository userRepository;
 
-
-
-    public boolean existsByEmail(String email) {
-        return repository.existsByEmail(email);
-    }
-
     public List<User> getAll() {
-        return repository.findAll();
+        return userRepository.findAll();
     }
 
-    public User getById(Long id) {
-        return repository.findById(id).orElse(null);
+    public User create(User user) {
+        return userRepository.save(user);
     }
 
-
-
-    public User update(Long id, User user) {
-        User existing = repository.findById(id).orElse(null);
-        if (existing != null) {
-            existing.setName(user.getName());
-            existing.setSurname(user.getSurname());
-            existing.setEmail(user.getEmail());
-            existing.setPhone(user.getPhone());
-            existing.setBirthdate(user.getBirthdate());
-            existing.setPassword(user.getPassword());
-            existing.setRole(user.getRole());
-            return repository.save(existing);
+    public User update(Long id, User updatedUser) {
+        Optional<User> existingUserOpt = userRepository.findById(id);
+        if (existingUserOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
         }
-        return null;
+
+        User existingUser = existingUserOpt.get();
+        // Update only provided fields
+        if (updatedUser.getName() != null) {
+            existingUser.setName(updatedUser.getName());
+        }
+        if (updatedUser.getSurname() != null) {
+            existingUser.setSurname(updatedUser.getSurname());
+        }
+        if (updatedUser.getEmail() != null) {
+            existingUser.setEmail(updatedUser.getEmail());
+        }
+        if (updatedUser.getPhone() != null) {
+            existingUser.setPhone(updatedUser.getPhone());
+        }
+        if (updatedUser.getBirthdate() != null) {
+            existingUser.setBirthdate(updatedUser.getBirthdate());
+        }
+        // Password is not updated unless explicitly provided
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+            existingUser.setPassword(updatedUser.getPassword()); // Optionally encode password
+        }
+
+        return userRepository.save(existingUser);
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        userRepository.deleteById(id);
     }
 
-
-
-    public User create(User user) {
-        System.out.println("=== USER CREATION DEBUG ===");
-        System.out.println("Phone: " + user.getPhone());
-        System.out.println("Birthdate: " + user.getBirthdate());
-        System.out.println("===========================");
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        // AUTO-ASSIGN ROLE_ID = 2
-        Role userRole = new Role();
-        userRole.setId(2L); // Set role_id to 2 directly
-        user.setRole(userRole);
-
-        return repository.save(user);
-    }
-    // Add this method to your UserService class
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 }

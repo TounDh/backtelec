@@ -41,6 +41,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Application> applications;
 
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "address_id")
+    private Address address;
+
     @PrePersist
     public void setDefaultRole() {
         if (this.role == null) {
@@ -67,4 +72,6 @@ public class User {
     public void setRole(Role role) { this.role = role; }
     public List<Application> getApplications() { return applications; }
     public void setApplications(List<Application> applications) { this.applications = applications; }
+    public Address getAddress() { return address; }
+    public void setAddress(Address address) { this.address = address; }
 }

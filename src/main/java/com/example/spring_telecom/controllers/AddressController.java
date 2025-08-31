@@ -1,0 +1,88 @@
+package com.example.spring_telecom.controllers;
+
+import com.example.spring_telecom.entities.Address;
+import com.example.spring_telecom.entities.User;
+import com.example.spring_telecom.services.AddressService;
+import com.example.spring_telecom.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/address")
+public class AddressController {
+
+    @Autowired
+    private AddressService addressService;
+
+    @Autowired
+    private UserService userService;
+
+    // GET address by user ID
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getAddressByUserId(@PathVariable Long userId) {
+        try {
+            Optional<User> user = userService.findById(userId);
+
+            if (user.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No user found with ID: " + userId);
+            }
+
+            Optional<Address> address = addressService.getAddressByUser(user.get());
+            if (address.isPresent()) {
+                return ResponseEntity.ok(address.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No address found for user ID: " + userId);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving address: " + e.getMessage());
+        }
+    }
+
+    // POST - Create or update address for user
+    @PostMapping("/user/{userId}")
+    public ResponseEntity<?> saveOrUpdateAddress(@PathVariable Long userId, @RequestBody Address address) {
+        try {
+            Optional<User> user = userService.findById(userId);
+
+            if (user.isPresent()) {
+                Address savedAddress = addressService.saveOrUpdateAddress(address, user.get());
+                return ResponseEntity.ok(savedAddress);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User not found with ID: " + userId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error saving address: " + e.getMessage());
+        }
+    }
+
+    // DELETE address by ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAddress(@PathVariable Long id) {
+        try {
+            addressService.deleteAddress(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting address: " + e.getMessage());
+        }
+    }
+
+    // Fallback for incorrect endpoints
+    @GetMapping
+    public ResponseEntity<?> handleRootGet() {
+        return ResponseEntity.badRequest().body("Please use /api/address/user/{userId} endpoint");
+    }
+
+    @PostMapping
+    public ResponseEntity<?> handleRootPost() {
+        return ResponseEntity.badRequest().body("Please use /api/address/user/{userId} endpoint with user ID");
+    }
+}

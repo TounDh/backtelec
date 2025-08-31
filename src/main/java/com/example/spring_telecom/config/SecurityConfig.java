@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -20,16 +21,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Disable CSRF for APIs
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/users/**").permitAll()  // Allow public access to user endpoints
-                        .requestMatchers("/api/users/details").permitAll()
-                        .requestMatchers("/api/srvces/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll() // Allow public access to services endpoints
-                        .anyRequest().authenticated()  // All other endpoints require authentication
+                        // Only protect login endpoint, allow everything else
+                        .anyRequest().permitAll()
                 )
-                .formLogin(form -> form.disable())  // Disable form login for APIs
-                .httpBasic(basic -> basic.disable());  // Disable basic authentication
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            // Logout success
+                            response.setStatus(200);
+                            response.getWriter().write("Logout successful");
+                        })
+                        .permitAll()
+                )
+                .anonymous(anonymous -> anonymous.disable());
 
         return http.build();
     }

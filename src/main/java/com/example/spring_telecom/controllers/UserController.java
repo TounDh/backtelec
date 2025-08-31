@@ -1,11 +1,11 @@
 package com.example.spring_telecom.controllers;
+
 import com.example.spring_telecom.entities.User;
 import com.example.spring_telecom.services.UserService;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,19 +16,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+
     @Autowired
     private UserService service;
-
 
     @GetMapping
     public List<User> getAll() {
         return service.getAll();
     }
-
-
-
-
-
 
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult bindingResult) {
@@ -38,7 +33,6 @@ public class UserController {
                     errors.put(error.getField(), error.getDefaultMessage()));
             return ResponseEntity.badRequest().body(errors);
         }
-        // Check for duplicate email (optional)
         if (service.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest().body("Email already exists");
         }
@@ -46,10 +40,20 @@ public class UserController {
         return ResponseEntity.ok(savedUser);
     }
 
-
     @PutMapping("/{id}")
-    public User update(@PathVariable Long id, @RequestBody User user) {
-        return service.update(id, user);
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody User user) {
+        try {
+            user.setId(id);
+            User updatedUser = service.update(id, user);
+            return ResponseEntity.ok(updatedUser);
+        } catch (ConstraintViolationException e) {
+            Map<String, String> errors = new HashMap<>();
+            e.getConstraintViolations().forEach(violation ->
+                    errors.put(violation.getPropertyPath().toString(), violation.getMessage()));
+            return ResponseEntity.badRequest().body(errors);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -57,14 +61,11 @@ public class UserController {
         service.delete(id);
     }
 
-
     @GetMapping("/details")
-    public User getUserDetails(@AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
+    public ResponseEntity<?> getUserDetails(@RequestParam String email) {
         User user = service.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // DEBUG: Check if fields are populated
         System.out.println("=== USER DEBUG INFO ===");
         System.out.println("User ID: " + user.getId());
         System.out.println("Phone: " + user.getPhone());
@@ -72,7 +73,6 @@ public class UserController {
         System.out.println("All fields: " + user.toString());
         System.out.println("=========================");
 
-        return user;
+        return ResponseEntity.ok(user);
     }
-
 }
