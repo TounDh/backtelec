@@ -1,5 +1,6 @@
 package com.example.spring_telecom.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -17,6 +18,7 @@ public class Application {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore // Prevents circular reference
     private User user;
 
     @ManyToOne
@@ -27,13 +29,12 @@ public class Application {
     @JoinColumn(name = "offer_id")
     private Offer offer;
 
-    // Constructor that sets the current date automatically
+    // Constructors, getters and setters
     public Application() {
         this.applicationDate = LocalDateTime.now();
-        this.status = "PENDING"; // Default status
+        this.status = "PENDING";
     }
 
-    // PrePersist callback to ensure date is set before saving
     @PrePersist
     protected void onCreate() {
         if (applicationDate == null) {
@@ -64,9 +65,4 @@ public class Application {
 
     public Offer getOffer() { return offer; }
     public void setOffer(Offer offer) { this.offer = offer; }
-
-    // Utility method to get formatted date
-    public String getFormattedApplicationDate() {
-        return applicationDate.toString(); // You can format this as needed
-    }
 }
