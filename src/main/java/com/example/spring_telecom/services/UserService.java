@@ -3,6 +3,7 @@ package com.example.spring_telecom.services;
 import com.example.spring_telecom.entities.User;
 import com.example.spring_telecom.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,11 +15,19 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder; // Add this
+
     public List<User> getAll() {
         return userRepository.findAll();
     }
 
     public User create(User user) {
+        // Hash the password before saving
+        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+            String hashedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(hashedPassword);
+        }
         return userRepository.save(user);
     }
 
@@ -45,9 +54,10 @@ public class UserService {
         if (updatedUser.getBirthdate() != null) {
             existingUser.setBirthdate(updatedUser.getBirthdate());
         }
-        // Password is not updated unless explicitly provided
+        // Password is hashed if provided
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-            existingUser.setPassword(updatedUser.getPassword()); // Optionally encode password
+            String hashedPassword = passwordEncoder.encode(updatedUser.getPassword());
+            existingUser.setPassword(hashedPassword);
         }
 
         return userRepository.save(existingUser);
