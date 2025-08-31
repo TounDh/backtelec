@@ -48,7 +48,9 @@ public class AuthController {
                 "name", user.getName(),
                 "surname", user.getSurname(),
                 "email", user.getEmail(),
-                "role", user.getRole()
+                "role", user.getRole(),
+                "phone", user.getPhone(),
+                "birthdate", user.getBirthdate()
         ));
         response.put("token", "jwt-token-placeholder"); // Implement JWT if needed
 

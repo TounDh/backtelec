@@ -1,5 +1,6 @@
 package com.example.spring_telecom.entities;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
@@ -22,9 +23,11 @@ public class User {
     private String email;
 
     @NotBlank(message = "Phone number is mandatory")
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private String phone;
 
     @Past(message = "Birthdate must be in the past")
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private LocalDate birthdate;
 
     @NotBlank(message = "Password is mandatory")

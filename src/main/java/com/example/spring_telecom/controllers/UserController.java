@@ -4,6 +4,8 @@ import com.example.spring_telecom.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,15 +19,13 @@ public class UserController {
     @Autowired
     private UserService service;
 
+
     @GetMapping
     public List<User> getAll() {
         return service.getAll();
     }
 
-    @GetMapping("/{id}")
-    public User getById(@PathVariable Long id) {
-        return service.getById(id);
-    }
+
 
 
 
@@ -56,4 +56,23 @@ public class UserController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
+
+
+    @GetMapping("/details")
+    public User getUserDetails(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        User user = service.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // DEBUG: Check if fields are populated
+        System.out.println("=== USER DEBUG INFO ===");
+        System.out.println("User ID: " + user.getId());
+        System.out.println("Phone: " + user.getPhone());
+        System.out.println("Birthdate: " + user.getBirthdate());
+        System.out.println("All fields: " + user.toString());
+        System.out.println("=========================");
+
+        return user;
+    }
+
 }

@@ -22,15 +22,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User create(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        // AUTO-ASSIGN ROLE_ID = 2
-        Role userRole = new Role();
-        userRole.setId(2L); // Set role_id to 2 directly
-        user.setRole(userRole);
 
-        return repository.save(user);
-    }
 
     public boolean existsByEmail(String email) {
         return repository.existsByEmail(email);
@@ -67,7 +59,20 @@ public class UserService {
 
 
 
+    public User create(User user) {
+        System.out.println("=== USER CREATION DEBUG ===");
+        System.out.println("Phone: " + user.getPhone());
+        System.out.println("Birthdate: " + user.getBirthdate());
+        System.out.println("===========================");
 
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // AUTO-ASSIGN ROLE_ID = 2
+        Role userRole = new Role();
+        userRole.setId(2L); // Set role_id to 2 directly
+        user.setRole(userRole);
+
+        return repository.save(user);
+    }
     // Add this method to your UserService class
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
