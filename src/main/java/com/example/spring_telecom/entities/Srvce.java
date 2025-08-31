@@ -1,5 +1,6 @@
 package com.example.spring_telecom.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -13,10 +14,12 @@ public class Srvce {
     private double installationFees;
 
     @OneToMany(mappedBy = "srvce", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Application> applications;
 
 
     @OneToMany(mappedBy = "srvce", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Offer> offers;
 
     // Getters and Setters
