@@ -158,31 +158,46 @@ public class PaymentController {
 
     @PostMapping("/{paymentId}/process")
     public ResponseEntity<?> processPayment(@PathVariable Long paymentId, @RequestBody Map<String, String> paymentData) {
-        Optional<Payment> optionalPayment = paymentRepository.findById(paymentId);
-
-        if (optionalPayment.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Payment payment = optionalPayment.get();
-
-        // Validate payment data
-        String cardNumber = paymentData.get("cardNumber");
-        String cvv = paymentData.get("cvv");
-        String expiryDate = paymentData.get("expiryDate"); // This is likely "MM/YY" format
-
-        // Check if card number is the test card
-        if (!"4242424242424242".equals(cardNumber)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid card number"));
-        }
-
-        // Check if CVV is the test value
-        if (!"123".equals(cvv)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid CVV"));
-        }
-
         try {
-            // Parse MM/YY format (e.g., "12/34" -> December 2034)
+            Optional<Payment> optionalPayment = paymentRepository.findById(paymentId);
+
+            if (optionalPayment.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Payment payment = optionalPayment.get();
+
+            // Validate payment data exists
+            if (paymentData == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Payment data is required"));
+            }
+
+            String cardNumber = paymentData.get("cardNumber");
+            String cvv = paymentData.get("cvv");
+            String expiryDate = paymentData.get("expiryDate");
+
+            // Validate all required fields
+            if (cardNumber == null || cardNumber.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Card number is required"));
+            }
+            if (cvv == null || cvv.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "CVV is required"));
+            }
+            if (expiryDate == null || expiryDate.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Expiry date is required"));
+            }
+
+            // Check if card number is the test card
+            if (!"4242424242424242".equals(cardNumber.replace(" ", ""))) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid card number"));
+            }
+
+            // Check if CVV is the test value
+            if (!"123".equals(cvv)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid CVV"));
+            }
+
+            // Parse expiry date
             String[] parts = expiryDate.split("/");
             if (parts.length != 2) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid expiry date format. Use MM/YY"));
@@ -190,20 +205,15 @@ public class PaymentController {
 
             int month = Integer.parseInt(parts[0]);
             int year = Integer.parseInt(parts[1]);
-
-            // Convert 2-digit year to 4-digit year (assuming 2000s)
             int fullYear = 2000 + year;
 
-            // Validate month is valid (1-12)
             if (month < 1 || month > 12) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid month in expiry date"));
             }
 
-            // Create a LocalDate for the last day of the expiry month
             LocalDate expiry = LocalDate.of(fullYear, month, 1)
                     .with(TemporalAdjusters.lastDayOfMonth());
 
-            // Check if card is expired
             if (expiry.isBefore(LocalDate.now())) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Card expired"));
             }
@@ -212,21 +222,32 @@ public class PaymentController {
             payment.setStatus("PAID");
             paymentRepository.save(payment);
 
+            // Check if application exists before creating installation
+            if (payment.getApplication() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Payment is not associated with an application"));
+            }
+
             // Create installation
             Installation installation = new Installation();
             installation.setApplication(payment.getApplication());
             installation.setStatus("UNSCHEDULED");
-            installationRepository.save(installation);
+            Installation savedInstallation = installationRepository.save(installation);
 
-            return ResponseEntity.ok(Map.of("message", "Payment successful", "installationId", installation.getId()));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Payment successful",
+                    "installationId", savedInstallation.getId()
+            ));
 
         } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid expiry date format"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid number format in expiry date"));
         } catch (DateTimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid date values"));
+        } catch (Exception e) {
+            // Log the actual error for debugging
+            System.err.println("Error processing payment: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + e.getMessage()));
         }
     }
-
-
 
 }
