@@ -53,4 +53,22 @@ public class InstallationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
+
+
+    @PatchMapping("/{id}/schedule")
+    public ResponseEntity<Installation> scheduleInstallation(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String date = body.get("date");
+        if (date == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Installation installation = service.getById(id);
+        if (installation == null) {
+            return ResponseEntity.notFound().build();
+        }
+        installation.setDate(date);
+        installation.setStatus("SCHEDULED");
+        return ResponseEntity.ok(service.update(id, installation));
+    }
 }
