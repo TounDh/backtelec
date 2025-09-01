@@ -8,7 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/installations")
@@ -33,10 +36,7 @@ public class InstallationController {
         return service.create(installation);
     }
 
-    @PutMapping("/{id}")
-    public Installation update(@PathVariable Long id, @RequestBody Installation installation) {
-        return service.update(id, installation);
-    }
+
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
@@ -52,23 +52,34 @@ public class InstallationController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+
+
     }
 
 
-
-
     @PatchMapping("/{id}/schedule")
-    public ResponseEntity<Installation> scheduleInstallation(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        String date = body.get("date");
-        if (date == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        Installation installation = service.getById(id);
-        if (installation == null) {
+    public ResponseEntity<Installation> scheduleInstallation(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> updates) {
+
+        Optional<Installation> optionalInstallation = installationRepository.findById(id);
+
+        if (optionalInstallation.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        installation.setDate(date);
+
+        Installation installation = optionalInstallation.get();
+
+        // Update date if provided
+        if (updates.containsKey("date")) {
+            String dateStr = (String) updates.get("date");
+            installation.setDate(LocalDate.parse(dateStr));
+        }
+
+        // Update status to SCHEDULED
         installation.setStatus("SCHEDULED");
-        return ResponseEntity.ok(service.update(id, installation));
+
+        Installation savedInstallation = installationRepository.save(installation);
+        return ResponseEntity.ok(savedInstallation);
     }
 }
