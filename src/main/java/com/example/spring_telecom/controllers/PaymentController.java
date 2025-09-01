@@ -7,6 +7,7 @@ import com.example.spring_telecom.repositories.InstallationRepository;
 import com.example.spring_telecom.repositories.PaymentRepository;
 import com.example.spring_telecom.services.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,9 @@ public class PaymentController {
 
     @Autowired
     private ApplicationRepository applicationRepository;
+
+    @Autowired
+    private PaymentService paymentService;
 
     @GetMapping
     public List<Payment> getAll() {
@@ -61,6 +65,94 @@ public class PaymentController {
     @PostMapping("/by-applications")
     public List<Payment> getPaymentsByApplicationIds(@RequestBody List<Long> applicationIds) {
         return paymentRepository.findByApplicationIdIn(applicationIds);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Get payments by application IDs
+
+
+    // Get all payments with details (application, user, service)
+    @GetMapping("/all")
+    public ResponseEntity<List<Payment>> getAllPaymentsWithDetails() {
+        try {
+            List<Payment> payments = paymentRepository.findAllWithApplicationAndUserAndService();
+            return ResponseEntity.ok(payments);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    // Search payments with filters
+    @GetMapping("/search")
+    public ResponseEntity<List<Payment>> searchPayments(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        try {
+            List<Payment> payments = paymentRepository.searchPayments(search, status, date);
+            return ResponseEntity.ok(payments);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    // Update payment status
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Payment> updatePaymentStatus(@PathVariable Long id, @RequestBody Map<String, String> statusUpdate) {
+        try {
+            Payment payment = paymentService.updatePaymentStatus(id, statusUpdate.get("status"));
+            if (payment != null) {
+                return ResponseEntity.ok(payment);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    // Get payments by status
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Payment>> getPaymentsByStatus(@PathVariable String status) {
+        try {
+            List<Payment> payments = paymentRepository.findByStatus(status);
+            return ResponseEntity.ok(payments);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    // Get overdue payments
+    @GetMapping("/overdue")
+    public ResponseEntity<List<Payment>> getOverduePayments() {
+        try {
+            List<Payment> payments = paymentRepository.findOverduePayments();
+            return ResponseEntity.ok(payments);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    // Get payments by user ID
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Payment>> getPaymentsByUserId(@PathVariable Long userId) {
+        try {
+            List<Payment> payments = paymentRepository.findByUserId(userId);
+            return ResponseEntity.ok(payments);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
 
@@ -134,4 +226,7 @@ public class PaymentController {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid date values"));
         }
     }
+
+
+
 }

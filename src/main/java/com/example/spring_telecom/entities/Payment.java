@@ -13,6 +13,7 @@ public class Payment {
     private double total;
     private String status;
 
+
     @OneToOne
     @JoinColumn(name = "application_id")
     private Application application;

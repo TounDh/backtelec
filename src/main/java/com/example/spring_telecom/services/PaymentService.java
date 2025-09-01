@@ -5,12 +5,18 @@ import com.example.spring_telecom.repositories.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PaymentService {
     @Autowired
     private PaymentRepository repository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
 
     public List<Payment> getAll() {
         return repository.findAll();
@@ -41,5 +47,40 @@ public class PaymentService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+
+
+    public List<Payment> getAllPaymentsWithDetails() {
+        return repository.findAllWithApplicationAndUserAndService();
+    }
+
+    public List<Payment> searchPayments(String searchTerm, String status, LocalDate date) {
+        return repository.searchPayments(searchTerm, status, date);
+    }
+
+    public Payment updatePaymentStatus(Long id, String status) {
+        Optional<Payment> optionalPayment = repository.findById(id);
+        if (optionalPayment.isPresent()) {
+            Payment payment = optionalPayment.get();
+            payment.setStatus(status);
+            return repository.save(payment);
+        }
+        return null;
+    }
+
+
+
+
+    public List<Payment> getPaymentsByStatus(String status) {
+        return paymentRepository.findByStatus(status);
+    }
+
+    public List<Payment> getOverduePayments() {
+        return paymentRepository.findOverduePayments();
+    }
+
+    public List<Payment> getPaymentsByUserId(Long userId) {
+        return paymentRepository.findByUserId(userId);
     }
 }
