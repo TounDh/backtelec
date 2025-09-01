@@ -14,8 +14,16 @@ public class ApplicationController {
     @Autowired
     private ApplicationService applicationService;
 
-    // Get applications by user ID
 
+    @PostMapping
+    public ResponseEntity<Application> createApplication(@RequestBody Application application) {
+        try {
+            Application savedApplication = applicationService.createApplication(application);
+            return ResponseEntity.ok(savedApplication);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
 
     @GetMapping

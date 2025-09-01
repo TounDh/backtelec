@@ -18,7 +18,7 @@ public class Application {
     private String status; // PENDING, APPROVED, REJECTED
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonIgnoreProperties({"applications", "password"})// Prevents circular reference
     private User user;
 
