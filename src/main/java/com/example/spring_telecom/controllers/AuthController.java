@@ -43,20 +43,22 @@ public class AuthController {
         // Create response with user data (excluding password)
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Login successful");
-        response.put("user", Map.of(
-                "id", user.getId(),
-                "name", user.getName(),
-                "surname", user.getSurname(),
-                "email", user.getEmail(),
-                "role", user.getRole(),
-                "phone", user.getPhone(),
-                "birthdate", user.getBirthdate()
-        ));
+
+        // Use a regular HashMap instead of Map.of() to handle null values
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getId());
+        userData.put("name", user.getName());
+        userData.put("surname", user.getSurname());
+        userData.put("email", user.getEmail());
+        userData.put("role", user.getRole());
+        userData.put("phone", user.getPhone()); // Can be null
+        userData.put("birthdate", user.getBirthdate()); // Can be null
+
+        response.put("user", userData);
         response.put("token", "jwt-token-placeholder"); // Implement JWT if needed
 
         return ResponseEntity.ok(response);
     }
-
     // Add this method to your UserService
     // public Optional<User> findByEmail(String email) {
     //     return userRepository.findByEmail(email);
